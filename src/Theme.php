@@ -10,7 +10,14 @@ class Theme {
 
     public function __construct($themeName, $assetPath = null, $viewsPath = null, Theme $parent = null){
         $this->name = $themeName;
-        $this->assetPath = $assetPath === null ? $themeName : $assetPath;
+
+        // Set the theme asset path using the default assets path relative to the public folder
+        $configAssetsPath = \Config::get('themes.assets_path');
+        if($assetPath !== null)
+          $this->assetPath = $assetPath;
+        else
+          $this->assetPath = $configAssetsPath === null ? $themeName : $configAssetsPath.'/'.$themeName;
+
         $this->viewsPath = $viewsPath === null ? $themeName : $viewsPath;
         $this->parent = $parent;
         \Theme::add($this);
@@ -60,7 +67,7 @@ class Theme {
             return $parentTheme->url($url);
         }
         // No parent theme? Lookup in the public folder.
-        else { 
+        else {
             if (file_exists(public_path($url))){
                 return "/".$url;
             }
@@ -105,7 +112,7 @@ class Theme {
 
             if ($t !== $this && $assetExists && $t->assetPath == $this->assetPath)
                 throw new \Exception("Can not delete folder [$viewsPath] of theme [{$this->name}] because it is also used by theme [{$t->name}]", 1);
-                
+
         }
 
         \File::deleteDirectory($viewsPath);
